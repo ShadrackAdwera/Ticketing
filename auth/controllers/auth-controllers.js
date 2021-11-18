@@ -153,3 +153,8 @@ const resetPassword = async(req,res,next) => {
     }
     res.status(200).json({message: 'Password reset is successful'});
 }
+
+exports.signUp = signUp;
+exports.login = login;
+exports.generatePasswordResetLink = generatePasswordResetLink;
+exports.resetPassword = resetPassword;
