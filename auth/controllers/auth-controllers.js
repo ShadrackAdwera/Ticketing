@@ -52,7 +52,6 @@ const signUp = async(req,res,next) => {
     res.status(201).json({message: 'Sign up successful', user: { id: user._id.toString(), email, token }})
 }
 
-//TODO: Login controlller
 const login = async(req,res,next) => {
     const error = validationResult(req);
     if(!error.isEmpty()) {
@@ -86,7 +85,6 @@ const login = async(req,res,next) => {
     res.status(200).json({message: 'Sign Up Successful', user: { id: foundUser._id.toString(), email, token }})
 }
 
-//TODO: Generate password reset link controller
 const generatePasswordResetLink = async(req,res,next) => {
     const error = validationResult(req);
     if(!error.isEmpty()) {
@@ -107,8 +105,7 @@ const generatePasswordResetLink = async(req,res,next) => {
     } catch (error) {
         return next(new HttpError('An error occured, try again', 500));
     }
-    const tokenExpirationDate = new Date();
-    tokenExpirationDate.setHours(tokenExpirationDate.getHours() + 4);
+    const tokenExpirationDate = Date.now() + 3600000;
 
     foundUser.resetToken = tokenReset;
     foundUser.tokenExpiration = tokenExpirationDate;
@@ -122,4 +119,37 @@ const generatePasswordResetLink = async(req,res,next) => {
     res.status(200).json({message: 'Check your email for a password reset link'});
 }
 
-//TODO: Reset password controller
+const resetPassword = async(req,res,next) => {
+    const { resetToken } = req.params;
+    const { password, id } = req.body;
+    if(!resetToken || resetToken.length<60) {
+        return next(new HttpError('Invalid token',401));
+    }
+
+    let foundUser;
+    let hashedPassword;
+    try {
+        foundUser = await User.findOne({resetToken, tokenExpiration: { $gt: Date.now() }, _id: id},'-password').exec();
+    } catch (error) {
+        return next(new HttpError('An error occured, try again',500));
+    }
+    if(!foundUser) {
+        return next(new HttpError('Password reset failed, try again',500));
+    }
+
+    try {
+        hashedPassword = await bcrypt.hash(password, 12);
+    } catch (error) {
+        return next(new HttpError('An error occured, try again',500));
+    }
+    foundUser.password = hashedPassword;
+    foundUser.resetToken = undefined;
+    foundUser.tokenExpiration = undefined;
+
+    try {
+        await foundUser.save();
+    } catch (error) {
+        return next(new HttpError('An error occured, try again', 500));
+    }
+    res.status(200).json({message: 'Password reset is successful'});
+}
