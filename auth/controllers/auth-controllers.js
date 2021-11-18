@@ -1,3 +1,4 @@
+const brypto = require('crypto');
 const bcrypt = require('bcryptjs');
 const jwt = require('jsonwebtoken');
 const { validationResult } = require('express-validator');
@@ -53,6 +54,10 @@ const signUp = async(req,res,next) => {
 
 //TODO: Login controlller
 const login = async(req,res,next) => {
+    const error = validationResult(req);
+    if(!error.isEmpty()) {
+        return next(new HttpError('Invalid email or password',422));
+    }
     const { email, password } = req.body;
 
     let foundUser
@@ -82,5 +87,39 @@ const login = async(req,res,next) => {
 }
 
 //TODO: Generate password reset link controller
+const generatePasswordResetLink = async(req,res,next) => {
+    const error = validationResult(req);
+    if(!error.isEmpty()) {
+        return next(new HttpError('Invalid email or password',422));
+    }
+    const { email } = req.body;
+    let foundUser;
+    let tokenReset;
+
+    try {
+        foundUser = await User.findOne({email}, '-password').exec();
+    } catch (error) {
+        return next(new HttpError('An error occured, try again', 500));
+    }
+    
+    try {
+        tokenReset = brypto.randomBytes(64).toString('hex');
+    } catch (error) {
+        return next(new HttpError('An error occured, try again', 500));
+    }
+    const tokenExpirationDate = new Date();
+    tokenExpirationDate.setHours(tokenExpirationDate.getHours() + 4);
+
+    foundUser.resetToken = tokenReset;
+    foundUser.tokenExpiration = tokenExpirationDate;
+
+    try {
+        await foundUser.save();
+    } catch (error) {
+        return next(new HttpError('An error occured, try again',500));
+    }
+    //email user with the link for password reset.
+    res.status(200).json({message: 'Check your email for a password reset link'});
+}
 
 //TODO: Reset password controller
