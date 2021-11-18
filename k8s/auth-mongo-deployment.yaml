@@ -15,7 +15,3 @@ spec:
       containers:
         - name: auth-mongo
           image: mongo
-          resources:
-          limits:
-            memory: "128Mi"
-            cpu: "500m"

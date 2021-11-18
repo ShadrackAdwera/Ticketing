@@ -28,6 +28,7 @@ app.use((error,req,res,next)=>{
     res.status(error.code || 500).json({message: error.message || 'An error occured, try again'});
 })
 
+// mongoose.connect(process.env.MONGO_URI)
 mongoose.connect(process.env.MONGO_URI)
 .then(()=>{
     console.log('Connected to DB');

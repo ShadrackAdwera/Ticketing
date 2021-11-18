@@ -63,7 +63,7 @@ const login = async(req,res,next) => {
     let isPassword
     let token
     try {
-        foundUser = await User.findOne({email},'-password').exec()
+        foundUser = await User.findOne({email}).exec()
     } catch (error) {
         return next(new HttpError('An error occured, try again',500));
     }
@@ -129,7 +129,7 @@ const resetPassword = async(req,res,next) => {
     let foundUser;
     let hashedPassword;
     try {
-        foundUser = await User.findOne({resetToken, tokenExpiration: { $gt: Date.now() }, _id: id},'-password').exec();
+        foundUser = await User.findOne({resetToken, tokenExpiration: { $gt: Date.now() }, _id: id}).exec();
     } catch (error) {
         return next(new HttpError('An error occured, try again',500));
     }

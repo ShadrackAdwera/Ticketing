@@ -7,7 +7,7 @@ spec:
     app: auth
   type: LoadBalancer
   ports:
-  - name: auth
-    protocol: TCP
-    port: 5000
-    targetPort: 5000
+    - name: auth
+      protocol: TCP
+      port: 5000
+      targetPort: 5000
