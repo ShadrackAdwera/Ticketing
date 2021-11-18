@@ -24,3 +24,5 @@ router.post('/reset-password/:resetToken',[
     body('id').not().isEmpty().custom(input=>mongoose.Types.ObjectId.isValid(input)),
     body('password').trim().isLength({min: 6})
 ],resetPassword)
+
+module.exports = router;
